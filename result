@@ -1,0 +1,19 @@
+* num-executors=4, executor-memory=16g, executor-cores=4 
+
+## mllib
+sum time is 53926
+
+## my own program
+Iter round 0 Time is 7303
+Iter round 1 Time is 5502
+Iter round 2 Time is 5056
+Iter round 3 Time is 5189
+Iter round 4 Time is 5077
+Iter round 5 Time is 5124
+Iter round 6 Time is 4343
+Iter round 7 Time is 5015
+Iter round 8 Time is 5146
+Iter round 9 Time is 5065
+Iter round 10 Time is 5380
+
+
