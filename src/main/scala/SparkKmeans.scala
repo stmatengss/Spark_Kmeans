@@ -15,22 +15,22 @@ import org.apache.spark.util.Vector
 
 object SparkKmeans {
 
-	val fileName = "hdfs://hadoop01.lab.pacman-thu.org:8020/user/2016310622/"
+	val fileName:String = "hdfs://hadoop01.lab.pacman-thu.org:8020/user/2016310622/"
 	val rand = new Random(44)
-	val eps = 0.01
-	var K = 4 
-	var randpointNum = 1000
-	var Demension = 42
-	var iterNum = 10
+	val eps:Double = 0.01
+	var kNum:Int = 4 
+	var randpointNum:Int = 1000
+	var Demension:Int = 42
+	var iterNum:Int = 10
 	var sc: SparkContext = null
 	val filterSet = Set(1, 2, 3, 41)
+	val conf = new SparkConf().setAppName("K-means")
 
 	def main(args: Array[String]) = {
-		val conf = new SparkConf().setAppName("Simple Application")
 		sc = new SparkContext(conf)
-		println("Hello")
+		println("It works!")
 		//workCountTest(sc)
-		if(args.length <= 2) {
+		if (args.length <= 6) {
 			if(args(0) == "mytest") {
 				kmeansTest(args(1))
 			} else if (args(0) == "mllibtest") {
@@ -38,10 +38,20 @@ object SparkKmeans {
 			} else {
 				println("Wrong argvs!")
 			}
+			kNum = args(2).toInt
+			iterNum = args(3).toInt
+			println("excutor = " + args(4))
+			println("cores = " + args(5))
 		} else {
-			println("Please use SpeakKmeans [mllib/test] [file_url]")
+			println("Please use SpeakKmeans [mllib/test] [file_url] [K] [iter_num] [excutor_num] [cores]")
 		}
 		sc.stop()
+	}
+
+	def printConf(): Unit = {
+		val res = conf.getExecutorEnv
+		println("len = " + res.size.toString)
+		res.foreach(println(_))
 	}
 
 	def workCountTest():Unit = {
@@ -123,14 +133,19 @@ object SparkKmeans {
 	}
 
 	def kmeansTest(fileUrl: String): Unit = {
-		val textFileRdd = sc.textFile(fileName + fileUrl)
-		val dataSetRdd = textFileRdd.map(x=>x.split(","))
-		val dataSetSolvedRdd = preSolved(dataSetRdd).cache
 		var beginTime: Long = 0
 		var endTime: Long = 0
 		var allBeginTime: Long = 0
 		var allEndTime: Long = 0
-		var kPoints = dataSetSolvedRdd.takeSample(false, K).toArray.zipWithIndex.map(x=>(x._2, x._1))
+		var sumtTime: Long = 0
+		val preBeginTime = timeNow()
+		val textFileRdd = sc.textFile(fileName + fileUrl)
+		val dataSetRdd = textFileRdd.map(x=>x.split(","))
+		val dataSetSolvedRdd = preSolved(dataSetRdd)
+		dataSetSolvedRdd.cache
+		var kPoints = dataSetSolvedRdd.takeSample(false, kNum).toArray.zipWithIndex.map(x=>(x._2, x._1))
+		val preEndTime = timeNow()
+		println("presolving time is " + (preBeginTime - preEndTime).toString)
 		println("cluster number is " + kPoints.size.toString)
 		allBeginTime = timeNow()
 		for (i<-0 to iterNum) {
@@ -164,7 +179,7 @@ object SparkKmeans {
 		val dataSetSolvedRdd = preSolved(dataSetRdd).map(s => Vectors.dense(s))
 		println(dataSetSolvedRdd.count)
 		beginTime = timeNow()
-		val model = KMeans.train(dataSetSolvedRdd, K, 10) 
+		val model = KMeans.train(dataSetSolvedRdd, kNum, 10) 
 		//model.clusterCenters.toArray.foreach(_.toArray.foreach(println(_)))
 		val kPoints = model.clusterCenters.toArray
 		println("res number is " + kPoints.size.toString)
