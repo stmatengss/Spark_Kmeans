@@ -31,6 +31,10 @@ object SparkKmeans {
 		println("It works!")
 		//workCountTest(sc)
 		if (args.length <= 6) {
+			kNum = args(2).toInt
+			iterNum = args(3).toInt
+			println("excutor = " + args(4))
+			println("cores = " + args(5))
 			if(args(0) == "mytest") {
 				kmeansTest(args(1))
 			} else if (args(0) == "mllibtest") {
@@ -38,10 +42,6 @@ object SparkKmeans {
 			} else {
 				println("Wrong argvs!")
 			}
-			kNum = args(2).toInt
-			iterNum = args(3).toInt
-			println("excutor = " + args(4))
-			println("cores = " + args(5))
 		} else {
 			println("Please use SpeakKmeans [mllib/test] [file_url] [K] [iter_num] [excutor_num] [cores]")
 		}
@@ -141,7 +141,7 @@ object SparkKmeans {
 		val preBeginTime = timeNow()
 		val textFileRdd = sc.textFile(fileName + fileUrl)
 		val dataSetRdd = textFileRdd.map(x=>x.split(","))
-		val dataSetSolvedRdd = preSolved(dataSetRdd)
+		val dataSetSolvedRdd = preSolved(dataSetRdd, true)
 		dataSetSolvedRdd.cache
 		var kPoints = dataSetSolvedRdd.takeSample(false, kNum).toArray.zipWithIndex.map(x=>(x._2, x._1))
 		val preEndTime = timeNow()
